@@ -17,7 +17,7 @@ hide_streamlit_style = """
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
-#Config
+
 cfg = yaml.load(open('config.yaml','r'),Loader=yaml.FullLoader)
 PICTURE_PROMPT = cfg['INFO']['PICTURE_PROMPT']
 WEBCAM_PROMPT = cfg['INFO']['WEBCAM_PROMPT']

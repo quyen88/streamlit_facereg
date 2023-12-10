@@ -50,6 +50,7 @@ cd Face-recognition-app-using-Streamlit
 
 2. Install the dependencies
 ```bash
+python3 -m venv env
 pip install -r requirements.txt
 ```
 
@@ -79,3 +80,4 @@ streamlit run Tracking.py
 4. Deployed app on Streamlit Cloud. [Click here](https://datct00-face-recognition-app-using-streamlit-tracking-sel9ym.streamlit.app/) to watch a demo of the app.
 
 
+add virt
