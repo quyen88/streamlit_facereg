@@ -10,6 +10,8 @@ information = defaultdict(dict)
 cfg = yaml.load(open('config.yaml','r'),Loader=yaml.FullLoader)
 DATASET_DIR = cfg['PATH']['DATASET_DIR']
 PKL_PATH = cfg['PATH']['PKL_PATH']
+new_width = 200
+new_height = 300
 
 def get_databse():
     with open(PKL_PATH,'rb') as f:
@@ -20,11 +22,11 @@ def recognize(image,TOLERANCE):
     known_encoding = [database[id]['encoding'] for id in database.keys()] 
     name = 'Unknown'
     id = 'Unknown'
-    face_locations = frg.face_locations(image)
+    face_locations = frg.face_locations(image, model='cnn')
     face_encodings = frg.face_encodings(image,face_locations)
     for (top,right,bottom,left),face_encoding in zip(face_locations,face_encodings):
         matches = frg.compare_faces(known_encoding,face_encoding,tolerance=TOLERANCE)
-        distance = frg.face_distance(known_encoding,face_encoding)
+        distance = frg.face_distance(known_encoding,face_encoding,)
         name = 'Unknown'
         id = 'Unknown'
         if True in matches:
@@ -36,6 +38,32 @@ def recognize(image,TOLERANCE):
         cv2.rectangle(image,(left,top),(right,bottom),(0,255,0),2)
         cv2.putText(image,name,(left,top-10),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
     return image, name, id
+def recognizeVideo(image,TOLERANCE): 
+    database = get_databse()
+    known_encoding = [database[id]['encoding'] for id in database.keys()] 
+    name = 'Unknown'
+    id = 'Unknown'
+    face_locations = frg.face_locations(image)
+    face_encodings = frg.face_encodings(image,face_locations)
+    for (top,right,bottom,left),face_encoding in zip(face_locations,face_encodings):
+        face_width = right - left
+        face_height = bottom - top
+        min_face_size_threshold = 40
+        if face_width > min_face_size_threshold and face_height > min_face_size_threshold:
+            matches = frg.compare_faces(known_encoding,face_encoding,tolerance=TOLERANCE)
+            distance = frg.face_distance(known_encoding,face_encoding)
+            name = 'Unknown'
+            id = 'Unknown'
+            if True in matches:
+                match_index = matches.index(True)
+                name = database[match_index]['name']
+                id = database[match_index]['id']
+                distance = round(distance[match_index],2)
+                cv2.putText(image,str(distance),(left,top-30),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
+            cv2.rectangle(image,(left,top),(right,bottom),(0,255,0),2)
+            cv2.putText(image,name,(left,top-10),cv2.FONT_HERSHEY_SIMPLEX,0.75,(0,255,0),2)
+    return image, name, id
+
 def isFaceExists(image): 
     face_location = frg.face_locations(image)
     if len(face_location) == 0:
@@ -64,7 +92,9 @@ def submitNew(name, id, image, old_idx=None):
             return 0
         new_idx = len(database)
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
-    database[new_idx] = {'image':image,
+
+    resized_image = cv2.resize(image, (new_width, new_height))
+    database[new_idx] = {'image':resized_image,
                         'id': id, 
                         'name':name,
                         'encoding':encoding}
